@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import HomePage from './pages/HomePage'
-import LoginPage from './Pages/LoginPage'
+import LoginPage from './pages/LoginPage'
 import ProfilePage from './pages/ProfilePage'
 import {Toaster} from 'react-hot-toast'
 import { AuthContext } from '../context/AuthContext'
