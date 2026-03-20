@@ -7,52 +7,46 @@ import userRouter from './routes/userRoutes.js';
 import messageRouter from './routes/messageRoutes.js';
 import { Server } from 'socket.io';
 
-//create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
 
-// Initialize socket.io server
+// 1. Socket.io CORS - fixed extra )) bracket
 export const io = new Server(server, {
-    cors: {origin: "*"} //initializes all origin using *
+    cors: {
+        origin: "https://chat-app-yuy8.onrender.com",
+        credentials: true
+    }
 })
 
 // store online users
-export const userSocketMap = {}; // {userId:, socketId} all the online user stores in usersocketmap
+export const userSocketMap = {};
 
-// socket.io connection hendler
 io.on("connection", (socket)=>{
     const userId = socket.handshake.query.userId;
     console.log("User connected", userId)
-
-    if(userId) userSocketMap[userId] = socket.id; //key [userId]
-   
-    // Emit online users to all connected clients
+    if(userId) userSocketMap[userId] = socket.id;
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
-
     socket.on("disconnect", ()=>{
         console.log("User Disconnected", userId);
         delete userSocketMap[userId];
         io.emit("getOnlineUsers", Object.keys(userSocketMap))
     })
-
 })  
 
-//Middleware setup
-app.use(express.json({limit: "4mb"}));
-app.use(cors())
+// 2. Express CORS - fixed URL + removed duplicate app.use(cors()) below
+app.use(cors({
+    origin: "https://chat-app-yuy8.onrender.com",
+    credentials: true
+}))
 
-//Route setup
+app.use(express.json({limit: "4mb"}));
+
 app.use('/api/status', (req,res)=> res.send("server is live"))
 app.use("/api/auth", userRouter);
 app.use('/api/messages', messageRouter)
 
-
-// connect to mongoDB
-
 await connectDB();
-
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log("Server is running on PORT:", PORT));
 
-//export server for vercel
 export default server;
